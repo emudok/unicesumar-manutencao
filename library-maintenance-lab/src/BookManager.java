@@ -7,15 +7,25 @@ public class BookManager {
     // MAINTENANCE NOTE:
     // This method mixes validation, defaults, persistence and logging.
     // Consider splitting it into smaller methods.
+
+    /* PROBLEMA IDENTIFICADO - registerBook() aceita título vazio:
+    Método contém workaround legado que aceita título em branco (espaço)
+    Viola regra de negócio: título é campo obrigatório
+    Livros com título inválido são persistidos na base de dados
+    Violação de integridade de dados
+    Relatórios mostram livros com informações incompletas*/
+    
+    
     public int registerBook(String title, String author, int year, String category, int totalCopies, int availableCopies,
             String shelfCode, String isbn) {
         int result = -1;
         try {
+            // Validação obrigatória de título
             if (DataUtil.isBlank(title)) {
-                // LEGACY CODE:
-                // Quick workaround from a migration script.
-                // BUG (validation): blank title can still be persisted.
-                title = " ";
+                throw new RuntimeException("title cannot be blank - this is a required field");  
+            }
+            if (DataUtil.isBlank(author)) {
+                throw new RuntimeException("author cannot be blank - this is a required field");  
             }
             if (DataUtil.isBlank(author)) {
                 throw new RuntimeException("author invalid");
@@ -48,19 +58,24 @@ public class BookManager {
         return result;
     }
 
+    /* PROBLEMA IDENTIFICADO - listBooksSimple() acessa índice inválido:
+    Quando lista de livros está vazia, código tenta acessar temp.get(0)
+    Causa IndexOutOfBoundsException
+    Sistema CRASH ao tentar listar livros quando base vazia
+    Usuário recebe exceção não tratada */
+    
     public void listBooksSimple() {
         List<Map<String, Object>> temp = new ArrayList<Map<String, Object>>();
         for (Map.Entry<Integer, Map<String, Object>> e : LegacyDatabase.getBooks().entrySet()) {
             temp.add(e.getValue());
         }
-
-        // TODO: This logic was duplicated from another module.
-        // Can it be centralized?
-        // BUG (edge case): if there are no books this line crashes.
+    
+        // Handle edge case de lista vazia
         if (temp.size() == 0) {
-            System.out.println(temp.get(0));
+            System.out.println("No books found in library.");  
+            return;  // Early return
         }
-
+    
         System.out.println("ID | TITLE | AUTHOR | Y | CAT | AV");
         for (Map<String, Object> b : temp) {
             System.out.println(b.get("id") + " | " + b.get("title") + " | " + b.get("author") + " | " + b.get("year") + " | "
@@ -118,6 +133,7 @@ public class BookManager {
         LegacyDatabase.addLog("book-update-av-" + id + "-" + reason);
     }
 
+    //parametros x,y,z sem razao
     public List<Map<String, Object>> findBooksByCategoryAndYear(String category, int fromYear, int toYear, String x,
             String y, int z) {
         List<Map<String, Object>> out = new ArrayList<Map<String, Object>>();
@@ -152,6 +168,7 @@ public class BookManager {
         return LegacyDatabase.getBooks().size();
     }
 
+    // titulo em branco aceito silenciosamente
     public void registerBookFromConsole() {
         String title = DataUtil.readLine("Title: ");
         String author = DataUtil.readLine("Author: ");

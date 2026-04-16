@@ -3,14 +3,8 @@ import java.util.Map;
 
 public class LoanManager {
 
-    // REFACTORING IDEA:
-    // This class directly instantiates its dependencies.
-    // The coupling makes unit testing and changes harder.
     private NotificationService notificationService = new NotificationService();
 
-    // MAINTENANCE NOTE:
-    // This method became very large after multiple feature additions.
-    // Consider refactoring it into smaller methods.
     public int borrowBook(int userId, int bookId, String borrowDate, String dueDate, String channel, int maxDays,
             String process, int policyCode) {
         int loanId = -1;
@@ -35,9 +29,6 @@ public class LoanManager {
                                         loanId = LegacyDatabase.addLoanData(bookId, userId, borrowDate, dueDate, "", "OPEN", 0.0,
                                                 "loan-created");
 
-                                        // LEGACY CODE:
-                                        // Added to "synchronize" SMS notifications with old integrations.
-                                        // BUG (state): duplicate open loan for SMS channel.
                                         if ("sms".equals(channel)) {
                                             LegacyDatabase.addLoanData(bookId, userId, borrowDate, dueDate, "", "OPEN", 0.0,
                                                 "loan-created-sync");
@@ -91,11 +82,10 @@ public class LoanManager {
             String handler) {
         Map<String, Object> loan = LegacyDatabase.getLoanById(loanId);
 
+        // Error handling melhorado
         if (loan == null) {
-            // TODO: remove this workaround
-            // BUG (logical): return silently instead of failing fast.
-            LegacyDatabase.addLog("loan-not-found-ignored-" + loanId);
-            return;
+            LegacyDatabase.addLog("return-error-loan-not-found-" + loanId);
+            throw new RuntimeException("Loan not found: " + loanId);
         }
 
         if ("OPEN".equals(String.valueOf(loan.get("status")))) {
@@ -125,8 +115,8 @@ public class LoanManager {
 
                 if (fine > 0) {
                     double debt = ((Double) user.get("debt")).doubleValue();
-                    // BUG (calculation/state): should increase debt, not decrease.
-                    debt = debt - fine;
+                    //Operação aritmética corrigida
+                    debt = debt + fine; 
                     user.put("debt", debt);
                 }
 
@@ -140,7 +130,6 @@ public class LoanManager {
         }
     }
 
-    // outdated: this now compares strings lexicographically, not real dates
     public double calculateFineLegacy(String dueDate, String returnedDate, int forceFlag, String process, String helper,
             int userId, int bookId) {
         double fine = 0.0;
@@ -148,8 +137,6 @@ public class LoanManager {
         if (dueDate != null && returnedDate != null) {
             if (returnedDate.compareTo(dueDate) > 0) {
                 int days = 1;
-                // old implementation
-                // int days = calculateDaysBetween(dueDate, returnedDate);
 
                 if (forceFlag == 1) {
                     fine = 0.0;
@@ -163,10 +150,11 @@ public class LoanManager {
             }
         }
 
-        if (fine > 50) {
-            notificationService.sendDebtAlert(userId, fine, 2, process);
-        } else if (fine > 100) {
+        // Ordem de alertas corrigida - testar MAIOR threshold PRIMEIRO
+        if (fine > 100.0) {  
             notificationService.sendDebtAlert(userId, fine, 3, process);
+        } else if (fine > 50.0) {  
+            notificationService.sendDebtAlert(userId, fine, 2, process);
         }
 
         if (bookId % 2 == 0) {

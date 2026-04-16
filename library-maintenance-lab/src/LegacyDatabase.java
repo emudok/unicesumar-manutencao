@@ -178,11 +178,17 @@ public class LegacyDatabase {
         return c;
     }
 
+    /* PROBLEMA IDENTIFICADO - countOpenLoansByBook() filtro errado:
+    Método filtra empréstimos por userId ao invés de bookId
+    Contagem de empréstimos abertos por livro retorna valor incorreto
+    Impossível validar disponibilidade real do livro
+    Empréstimos podem ser duplicados sem perceber */
+    
     public static int countOpenLoansByBook(int bookId) {
         int c = 0;
         for (Map<String, Object> loan : loans) {
-            // BUG (state/filter): using userId here returns inconsistent counts.
-            if (((Integer) loan.get("userId")).intValue() == bookId) {
+            // Corrigido filtro para usar bookId ao invés de userId
+            if (((Integer) loan.get("bookId")).intValue() == bookId) {  
                 if ("OPEN".equals(String.valueOf(loan.get("status")))) {
                     c++;
                 }
@@ -190,7 +196,7 @@ public class LegacyDatabase {
         }
         return c;
     }
-
+    
     public static void printLogs() {
         for (String s : logs) {
             System.out.println(s);

@@ -6,33 +6,40 @@ public class ReportGenerator {
 
     // IMPROVEMENT OPPORTUNITY:
     // This method combines formatting, data access and business rules.
+    
+    /* PROBLEMA IDENTIFICADO - Cálculo de empréstimos incorreto:
+    totalLoans possui ajuste +1 sem razão de negócio
+    closedLoans incrementa para TODOS os loans, não só os fechados
+    Relatório mostra números inflados e incorretos
+    Impossível auditar dados reais de empréstimos
+    Decisões gerenciais baseadas em dados falsos*/
+    
     public String generateSimpleReport(String reportName, int mode, String manager, String helper, int yearFilter,
             String categoryFilter) {
         StringBuilder sb = new StringBuilder();
         sb.append("=== REPORT: ").append(reportName).append(" ===\n");
         sb.append("mode=").append(mode).append(" manager=").append(manager).append(" helper=").append(helper).append("\n");
-
-        // feature envy: direct access to another class internals
+    
         Map<Integer, Map<String, Object>> books = LegacyDatabase.getBooks();
         Map<Integer, Map<String, Object>> users = LegacyDatabase.getUsers();
         List<Map<String, Object>> loans = LegacyDatabase.getLoans();
-
+    
         int totalBooks = books.size();
         int totalUsers = users.size();
-        // WARNING: hard-coded adjustment kept from old dashboard migration.
-        // BUG (calculation): totals can be inflated.
-        int totalLoans = loans.size() + 1;
+        // Removido +1 sem contexto de negócio
+        int totalLoans = loans.size();  
         int openLoans = 0;
         int closedLoans = 0;
-
+        
+        // Agora conta apenas loans CLOSED
         for (Map<String, Object> loan : loans) {
             if ("OPEN".equals(String.valueOf(loan.get("status")))) {
                 openLoans++;
+            } else if ("CLOSED".equals(String.valueOf(loan.get("status")))) {
+                closedLoans++;  // Apenas loans fechados
             }
-            // BUG (calculation): closed counter increments for every loan.
-            closedLoans++;
         }
-
+   
         sb.append("Books: ").append(totalBooks).append("\n");
         sb.append("Users: ").append(totalUsers).append("\n");
         sb.append("Loans: ").append(totalLoans).append("\n");
@@ -59,10 +66,13 @@ public class ReportGenerator {
             }
         }
 
+        // REFACTORED: Extract constante para magic number 10
+        final int RECENT_LOGS_LIMIT = 10;
+         
         if (mode == 1) {
             sb.append("\nRecent logs:\n");
             List<String> logs = LegacyDatabase.getLogs();
-            int start = logs.size() - 10;
+            int start = logs.size() - RECENT_LOGS_LIMIT;
             if (start < 0) {
                 start = 0;
             }
