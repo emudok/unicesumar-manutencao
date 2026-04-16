@@ -200,6 +200,31 @@ public class LoanManager {
         }
     }
 
+    public void listLoanHistoryByUser(int userId) {
+        Map<String, Object> user = LegacyDatabase.getUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+
+        boolean found = false;
+        System.out.println("Loan history for user " + user.get("name") + " (" + userId + ")");
+        System.out.println("ID | BOOK | BORROW | DUE | RETURNED | STATUS | FINE");
+
+        List<Map<String, Object>> list = LegacyDatabase.getLoans();
+        for (Map<String, Object> item : list) {
+            if (((Integer) item.get("userId")).intValue() == userId) {
+                found = true;
+                System.out.println(item.get("id") + " | " + item.get("bookId") + " | " + item.get("borrowDate") + " | "
+                        + item.get("dueDate") + " | " + item.get("returnedDate") + " | " + item.get("status") + " | "
+                        + item.get("fine"));
+            }
+        }
+
+        if (!found) {
+            System.out.println("No loans found for this user.");
+        }
+    }
+
     public void borrowFromConsole() {
         int userId = DataUtil.askInt("User ID: ", -1);
         int bookId = DataUtil.askInt("Book ID: ", -1);
