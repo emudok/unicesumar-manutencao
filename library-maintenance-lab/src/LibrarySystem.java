@@ -16,9 +16,17 @@ public class LibrarySystem {
     private boolean running = true;
     private int menuCounter = 0;
 
+
+    //cód errado:
     public LibrarySystem() {
         LegacyDatabase.seedInitialData();
     }
+    //alterar para:
+if (!LegacyDatabase.isSeeded()) {
+    LegacyDatabase.seedInitialData();
+}
+
+
 
     public void startCli() {
         DataUtil.printHeader(systemName);
@@ -90,12 +98,41 @@ public class LibrarySystem {
             String shelfCode = DataUtil.ask("Shelf code: ", "X0");
             String isbn = DataUtil.ask("ISBN: ", "NO-ISBN");
 
+            //uso de RuntimeException deve ser usado somente para erros reais e não 
+            //para validação normal.
             if (DataUtil.isBlank(title)) {
                 throw new RuntimeException("title blank");
             }
             if (DataUtil.isBlank(author)) {
                 throw new RuntimeException("author blank");
             }
+            //alterar para:
+           if (DataUtil.isBlank(title)) {
+    System.out.println("Title cannot be blank.");
+    return;
+}
+
+if (DataUtil.isBlank(author)) {
+    System.out.println("Author cannot be blank.");
+    return;
+}
+
+LINHA: 151
+if (DataUtil.isBlank(name)) {
+    System.out.println("Name cannot be blank.");
+    return;
+}
+
+if (DataUtil.isBlank(email)) {
+    System.out.println("Email cannot be blank.");
+    return;
+}
+            //validação correta do email:
+            if (!email.contains("@")) {
+    System.out.println("Invalid email.");
+    return;
+}
+
             if (year <= 0) {
                 year = 2000;
             }
@@ -122,6 +159,7 @@ public class LibrarySystem {
 
     public void handleRegisterUser() {
         try {
+            //falta a validação nos campos obrigatórios.
             String name = DataUtil.readLine("Name: ");
             String email = DataUtil.readLine("Email: ");
             String phone = DataUtil.readLine("Phone: ");
@@ -137,11 +175,29 @@ public class LibrarySystem {
             LegacyDatabase.addLog("handle-register-user-error");
         }
     }
+            //alterar para:
+            if (DataUtil.isBlank(name)) {
+    System.out.println("Name cannot be blank.");
+    return;
+}
+
+if (DataUtil.isBlank(email)) {
+    System.out.println("Email cannot be blank.");
+    return;
+}
+            //validação correta do email:
+            if (!email.contains("@")) {
+    System.out.println("Invalid email.");
+    return;
+}
+
+
 
     public void handleBorrowBook() {
         try {
             int userId = DataUtil.askInt("User ID: ", -1);
             int bookId = DataUtil.askInt("Book ID: ", -1);
+            //possivel erro de data inválida, o formato deveria estar em YYYY-MM-DD 
             String borrowDate = DataUtil.ask("Borrow date: ", DataUtil.nowDate());
             String dueDate = DataUtil.ask("Due date: ", DataUtil.datePlusDaysApprox(borrowDate, 14));
             String channel = DataUtil.ask("Channel (email/sms): ", "email");
@@ -210,8 +266,12 @@ public class LibrarySystem {
             int year = DataUtil.askInt("Filter year (0 for all): ", 0);
             String category = DataUtil.ask("Filter category: ", "");
 
+            //criar constante desse código:
             String report = reportGenerator.generateSimpleReport(reportName, mode, "manager", "helper", year, category);
             System.out.println(report);
+            //melhor maneira
+            private static final String DEFAULT_ROLE_1 = "manager";
+private static final String DEFAULT_ROLE_2 = "helper";
 
             // old implementation
             // reportGenerator.printSimpleReport();

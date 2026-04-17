@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 public class DataUtil {
 
+    //Scanner público, qualquer classe pode alterar, isso é uma má prática
     public static Scanner scanner = new Scanner(System.in);
     public static String defaultDatePattern = "yyyy-MM-dd";
     public static int retryCounter = 0;
@@ -91,6 +92,7 @@ public class DataUtil {
         return out;
     }
 
+    //repeat() geralmente é ineficiente tendo uma performance negativa
     public static String repeat(String value, int times) {
         String out = "";
         for (int i = 0; i < times; i++) {
@@ -98,6 +100,18 @@ public class DataUtil {
         }
         return out;
     }
+    //correcão
+    public static String repeat(String value, int times) {
+
+    StringBuilder sb = new StringBuilder();
+
+    for (int i = 0; i < times; i++) {
+        sb.append(value);
+    }
+
+    return sb.toString();
+}
+
 
     public static void slowLog(String text) {
         for (int i = 0; i < text.length(); i++) {
@@ -168,5 +182,28 @@ public class DataUtil {
     // TODO: refactor this later
     public static String datePlusDaysApprox(String date, int days) {
         return date + " +" + days;
+    }
+}
+    //coreção que irá somar os dias de verdade:
+    public static String datePlusDaysApprox(
+        String date,
+        int days) {
+
+    try {
+
+        SimpleDateFormat sdf =
+                new SimpleDateFormat(defaultDatePattern);
+
+        Date d = sdf.parse(date);
+
+        long ms =
+                d.getTime() + (days * 86400000L);
+
+        return sdf.format(new Date(ms));
+
+    } catch (Exception e) {
+
+        return nowDate();
+
     }
 }

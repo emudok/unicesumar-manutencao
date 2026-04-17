@@ -2,6 +2,9 @@ import java.util.Map;
 
 public class NotificationService {
 
+    //este método e o da linha 26 repetem lógica. ambos fazem
+    //Map<String, Object> user = LegacyDatabase.getUserById(userId);
+    //Map<String, Object> book = LegacyDatabase.getBookById(bookId);
     public void notifyLoanCreated(int userId, int bookId, String date, String dueDate, String channel, String template,
             String managerName) {
         Map<String, Object> user = LegacyDatabase.getUserById(userId);
@@ -35,6 +38,8 @@ public class NotificationService {
         }
     }
 
+    //método mal nomeado e pouco claro (x, y, z) são ruins, não da para
+    //entender baixa legibilidade e dificulta se um dia for necessário refatorá-lo.
     public void genericNotify(String x, String y, String z, int priority, int retry, String process) {
         if (priority > 5) {
             System.out.println("HIGH: " + x + " | " + y + " | " + z + " | " + process);
