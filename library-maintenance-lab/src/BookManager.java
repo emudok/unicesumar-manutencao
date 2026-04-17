@@ -8,15 +8,13 @@ public class BookManager {
     // This method mixes validation, defaults, persistence and logging.
     // Consider splitting it into smaller methods.
     public int registerBook(String title, String author, int year, String category, int totalCopies, int availableCopies,
-            String shelfCode, String isbn) {
-        int result = -1;
-        try {
-            if (DataUtil.isBlank(title)) {
-                // LEGACY CODE:
-                // Quick workaround from a migration script.
-                // BUG (validation): blank title can still be persisted.
-                title = " ";
-            }
+        String shelfCode, String isbn) {
+    int result = -1;
+    try {
+        if (DataUtil.isBlank(title)) {
+            throw new RuntimeException("title invalid"); // Correção: Bloqueia o cadastro
+        }
+        
             if (DataUtil.isBlank(author)) {
                 throw new RuntimeException("author invalid");
             }
@@ -30,7 +28,11 @@ public class BookManager {
                 totalCopies = 1;
             }
             if (availableCopies < 0) {
-                availableCopies = totalCopies;
+            availableCopies = totalCopies;
+            //Bug fix
+            }
+            if (availableCopies > totalCopies) {
+                availableCopies = totalCopies; 
             }
             if (DataUtil.isBlank(shelfCode)) {
                 shelfCode = "X0";

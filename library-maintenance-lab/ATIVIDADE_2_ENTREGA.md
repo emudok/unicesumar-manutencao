@@ -21,6 +21,20 @@
 - usar `loans.size()` como total real
 - contar emprestimos fechados apenas quando o status for `CLOSED`
 
+### 4. Cadastro de livro com titulo em branco
+- Arquivo: `src/BookManager.java`
+
+- Problema anterior: o metodo registerBook substituia o titulo vazio por um espaco simples (" ") por causa de um codigo legado e permitia o salvamento, gerando dados indevidos.
+
+- Correcao aplicada: removida a atribuicao do espaco e adicionado bloqueio imediato, lancando a excecao throw new RuntimeException("title invalid");.
+
+### 5. Copias disponiveis ultrapassando o estoque total
+- Arquivo: `src/BookManager.java`
+
+- Problema anterior: o metodo registerBook nao validava se as copias disponiveis excediam o numero total de copias do livro, permitindo uma falha na regra de negocio do estoque.
+
+- Correcao aplicada: adicionada condicional garantindo que, caso availableCopies > totalCopies, as copias disponiveis sao niveladas pelo teto maximo.
+
 ## Nova funcionalidade
 
 ### Historico de emprestimos por usuario
