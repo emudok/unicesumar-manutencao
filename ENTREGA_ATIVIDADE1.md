@@ -1,10 +1,4 @@
-# Relatório de Refatoração - Atividade 1
 
-## Visão Geral da Branch
-
-Diferenças entre a branch atual e `master`:
-- Arquivos alterados: `library-maintenance-lab/src/BookManager.java`, `library-maintenance-lab/src/LegacyDatabase.java`, `library-maintenance-lab/src/LoanManager.java`, `library-maintenance-lab/src/ReportGenerator.java`
-- Volume das mudanças: 727 inserções e 706 deleções
 
 ## Problemas resolvidos
 
@@ -69,10 +63,4 @@ Diferenças entre a branch atual e `master`:
   - remoção de ajuste mágico e contagem incorreta de empréstimos fechados
   - extração de constante local para limite de logs recentes
 
-## Pontos adicionais
 
-- O relatório foi baseado em:
-  - lista de smells e problemas identificados em `library-maintenance-lab/ATIVIDADE_1.md`
-  - diferenças reais entre a branch atual e `master` na pasta `library-maintenance-lab/src`
-
-- A mudança concentra-se em correções de bugs e melhoria de estabilidade, mantendo o comportamento funcional do sistema.
